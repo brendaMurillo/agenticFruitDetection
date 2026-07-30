@@ -29,7 +29,7 @@ from segmentation import encode_image_b64
 
 FRUIT_PROFILES = {
     "banana":     {"unripe_hue": (35, 85),  "ripe_hue": (18, 34),  "reliable": True},
-    "mango":      {"unripe_hue": (40, 85),  "ripe_hue": (5, 30),   "reliable": True, "spot_sat_max": 110},
+    "mango":      {"unripe_hue": (40, 85),  "ripe_hue": (14, 32),  "reliable": False, "spot_sat_max": 110},
     "strawberry": {"unripe_hue": (35, 85),  "ripe_hue": (170, 8),  "reliable": True},
     "tomato":     {"unripe_hue": (35, 85),  "ripe_hue": (170, 8),  "reliable": True},
     "apple":      {"unripe_hue": (35, 85),  "ripe_hue": (170, 10), "reliable": True},
@@ -45,10 +45,16 @@ RIPENESS_RUBRICS = {
               "yellow, at most 1-2 tiny brown flecks -- peak fresh-eating ripeness. "
               "125%: yellow mostly covered in brown spots. 150%: skin mostly "
               "brown/black, very soft -- past fresh eating, good for baking.",
-    "mango": "0%: fully green, hard. 50%: green-yellow, slight red blush starting. "
-             "100%: mostly yellow/orange/red with slight give when pressed -- peak "
-             "ripeness. 125%: very soft-looking, wrinkling, dark spots. 150%: "
-             "heavily wrinkled/darkened, likely overripe.",
+    "mango": "IMPORTANT: red/pink blush is a varietal trait that can appear on "
+             "mango skin even while the fruit is still unripe -- don't treat heavy "
+             "blush alone as a ripeness signal. Judge primarily by the GROUND color "
+             "(the non-blushed background skin): 0% = ground color fully green, "
+             "hard. 50% = ground color green-yellow mix. 100% = ground color mostly "
+             "yellow/gold with slight give when pressed -- peak ripeness, regardless "
+             "of how much blush is present. 125%: ground color fully yellow, "
+             "skin wrinkling, dark spots. 150%: heavily wrinkled/darkened, likely "
+             "overripe. If blush covers most of the fruit and you can't see much "
+             "ground color, say so in reliability_note and estimate cautiously.",
     "strawberry": "0%: white/pale green shoulders. 50%: half red, half white/green. "
                   "100%: fully deep red, glossy -- peak ripeness. 125%: very dark "
                   "red, dull, maybe a soft spot. 150%: mushy, dark red/purple, "
