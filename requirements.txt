@@ -1,0 +1,8 @@
+opencv-python-headless
+numpy
+anthropic
+flask
+
+# picamera2 usually comes preinstalled on Raspberry Pi OS (Bullseye and
+# later). If it's missing:
+#   sudo apt install -y python3-picamera2

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ripeness Bench</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+
+    <header>
+      <h1 class="wordmark">Ripeness <em>Bench</em></h1>
+      <div class="tagline">Two fruits &middot; one verdict</div>
+    </header>
+
+    {% if photo_name %}
+      <div class="photo-panel">
+        {% if result %}
+          <img src="{{ url_for('serve_result', filename=result.result_image) }}" alt="Annotated photo with ripeness results">
+        {% else %}
+          <img src="{{ url_for('serve_photo', filename=photo_name) }}" alt="Latest captured photo">
+        {% endif %}
+        <div class="photo-meta">
+          <span>{{ photo_name }}</span>
+          <a href="/">refresh &#8635;</a>
+        </div>
+      </div>
+    {% else %}
+      <div class="photo-panel">
+        <div class="photo-empty">
+          No photo found in<br>{{ photos_dir }}<br><br>
+          Take one with the button, scp it over, then <a href="/" style="color: var(--accent);">refresh</a>.
+        </div>
+      </div>
+    {% endif %}
+
+    {% if error %}
+      <div class="error-panel">
+        <strong>Couldn't analyze that photo</strong>
+        {{ error }}
+      </div>
+    {% endif %}
+
+    <form class="analyze-form" method="POST" action="/analyze">
+      <div class="form-row">
+        <div class="field">
+          <label for="fruit1">Left fruit</label>
+          <select name="fruit1" id="fruit1">
+            <option value="" {{ 'selected' if not fruit1 }}>Auto-detect</option>
+            {% for f in known_fruits %}
+              <option value="{{ f }}" {{ 'selected' if fruit1 == f }}>{{ f.capitalize() }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="fruit2">Right fruit</label>
+          <select name="fruit2" id="fruit2">
+            <option value="" {{ 'selected' if not fruit2 }}>Auto-detect</option>
+            {% for f in known_fruits %}
+              <option value="{{ f }}" {{ 'selected' if fruit2 == f }}>{{ f.capitalize() }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field" style="max-width: 160px;">
+          <label>Mode</label>
+          <div class="mode-pills">
+            <label><input type="radio" name="mode" value="local" {{ 'checked' if mode != 'ai' }}><span>Local</span></label>
+            <label><input type="radio" name="mode" value="ai" {{ 'checked' if mode == 'ai' }}><span>AI</span></label>
+          </div>
+        </div>
+        <button class="analyze-btn" type="submit">Analyze</button>
+      </div>
+    </form>
+
+    {% if result %}
+      <div class="verdict">{{ result.verdict }}</div>
+
+      <div class="fruit-grid">
+        {% for item in result.fruits %}
+          <div class="fruit-card">
+            <div class="fruit-eyebrow">{{ item.side }} &middot; {{ item.detection_note }}</div>
+            <div class="fruit-name">{{ item.fruit_type }}</div>
+
+            <div class="gauge-readout">
+              <span class="gauge-pct">{{ '%.0f'|format(item.ripeness_percent) }}%</span>
+              <span class="tier-badge" style="background: {{ item.tier_color }};">{{ item.tier_label }}</span>
+            </div>
+
+            <div class="gauge">
+              <div class="gauge-peak-line"></div>
+              <div class="gauge-pointer" style="left: {{ item.gauge_pct }}%;"></div>
+            </div>
+            <div class="gauge-scale">
+              <span>0</span><span>50</span><span>100 (peak)</span><span>150</span>
+            </div>
+
+            <div class="cues">{{ item.cues|join(' · ') }}</div>
+            {% if item.reliability_note %}
+              <div class="reliability-note">{{ item.reliability_note }}</div>
+            {% endif %}
+
+            <div class="recommendation">{{ item.recommendation }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <footer>
+      {% if result %}mode: {{ result.mode }} &middot; {% endif %}watching {{ photos_dir }}
+    </footer>
+
+  </div>
+</body>
+</html>
