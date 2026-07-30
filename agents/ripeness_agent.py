@@ -29,12 +29,12 @@ from segmentation import encode_image_b64
 
 FRUIT_PROFILES = {
     "banana":     {"unripe_hue": (35, 85),  "ripe_hue": (18, 34),  "reliable": True},
-    "mango":      {"unripe_hue": (40, 85),  "ripe_hue": (5, 30),   "reliable": True},
+    "mango":      {"unripe_hue": (40, 85),  "ripe_hue": (5, 30),   "reliable": True, "spot_sat_max": 110},
     "strawberry": {"unripe_hue": (35, 85),  "ripe_hue": (170, 8),  "reliable": True},
     "tomato":     {"unripe_hue": (35, 85),  "ripe_hue": (170, 8),  "reliable": True},
     "apple":      {"unripe_hue": (35, 85),  "ripe_hue": (170, 10), "reliable": True},
     "avocado":    {"darkness_based": True,                          "reliable": True},
-    "orange":     {"unripe_hue": (40, 55),  "ripe_hue": (5, 25),   "reliable": False},
+    "orange":     {"unripe_hue": (40, 55),  "ripe_hue": (5, 25),   "reliable": False, "spot_sat_max": 110},
     "watermelon": {"unripe_hue": (45, 85),  "ripe_hue": (35, 50),  "reliable": False},
 }
 
@@ -126,7 +126,19 @@ class LocalRipenessAgent:
         # a threshold.
         bright_mask = (v >= 90) & mask_bool
         total = mask_bool.sum()
-        dark_frac = 1 - (bright_mask.sum() / total) if total > 0 else 0.0
+
+        # For most fruits, low brightness alone is a good decay signal. But
+        # for fruits whose HEALTHY ripe color is itself dark-leaning (like
+        # mango's red blush, which can be nearly as dark as real bruising),
+        # brightness alone false-positives on vivid, healthy coloring. Where
+        # a profile sets spot_sat_max, also require low saturation -- real
+        # decay is dull/muddy, whereas healthy blush stays vivid/saturated.
+        spot_sat_max = profile.get("spot_sat_max")
+        if spot_sat_max is not None:
+            dark_mask = (v < 90) & (s < spot_sat_max) & mask_bool
+            dark_frac = dark_mask.sum() / total if total > 0 else 0.0
+        else:
+            dark_frac = 1 - (bright_mask.sum() / total) if total > 0 else 0.0
 
         unripe_frac = _hue_frac(h, s, bright_mask, unripe_lo, unripe_hi)
         ripe_frac = _hue_frac(h, s, bright_mask, ripe_lo, ripe_hi)
