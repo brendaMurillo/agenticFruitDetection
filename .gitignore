@@ -1,0 +1,12 @@
+photos/
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.h264
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/
+.DS_Store
